@@ -2,70 +2,101 @@ require "rails_helper"
 
 RSpec.describe "Merchant Invoices Show" do
   before :each do
-    @merchants = create_list(:merchant, 3)
-    @items1 = create_list(:item, 3, merchant: @merchants[0])
-    @items2 = create_list(:item, 2, merchant: @merchants[1])
-    @customers = create_list(:customer, 2)
+    @merchant_1 = create :merchant
+    @item_1 = create :item, {merchant_id: @merchant_1.id}
+    @item_4 = create :item, {merchant_id: @merchant_1.id}
+    @item_2 = create :item, {merchant_id: @merchant_1.id}
+    @bulk_1 = @merchant_1.bulk_discounts.create!(percentage: 10, threshold: 10)
+    @bulk_2 = @merchant_1.bulk_discounts.create!(percentage: 25, threshold: 15)
+    @bulk_3 = @merchant_1.bulk_discounts.create!(percentage: 15, threshold: 20)
 
-    @invoices1 = create_list(:invoice, 2, customer: @customers[0])
-    @invoice_item1 = create(:invoice_item, invoice: @invoices1[0], item: @items1[0])
-    @invoice_item3 = create(:invoice_item, invoice: @invoices1[1], item: @items1[1])
-    @invoice_item2 = create(:invoice_item, invoice: @invoices1[0], item: @items1[2])
+    @merchant_2 = create :merchant
+    @item_3 = create :item, {merchant_id: @merchant_2.id}
+    @bulk_4 = @merchant_2.bulk_discounts.create!(percentage: 10, threshold: 6)
 
-    @invoices2 = create_list(:invoice, 2, customer: @customers[1])
-    @invoice_item6 = create(:invoice_item, invoice: @invoices2[0], item: @items2[0])
-    @invoice_item4 = create(:invoice_item, invoice: @invoices2[1], item: @items2[1])
+    @customer = create(:customer)
 
-    visit merchant_invoice_path(@merchants[0], @invoices1[0])
+    @invoice_1 = create(:invoice, customer_id: @customer.id)
+    @invoice_item_1 = create(:invoice_item, invoice_id: @invoice_1.id, item_id: @item_4.id, quantity: 16, unit_price: 2200)
+    @invoice_item_2 = create(:invoice_item, invoice_id: @invoice_1.id, item_id: @item_1.id, quantity: 6, unit_price: 4200)
+    @invoice_item_3 = create(:invoice_item, invoice_id: @invoice_1.id, item_id: @item_3.id, quantity: 4, unit_price: 3500)
+    @invoice_item_4 = create(:invoice_item, invoice_id: @invoice_1.id, item_id: @item_2.id, quantity: 11, unit_price: 1200)
+
+    @invoice_2 = create(:invoice, customer_id: @customer.id)
+    @invoice_item_5 = create(:invoice_item, invoice_id: @invoice_2.id, item_id: @item_3.id, quantity: 4, unit_price: 7300 )
+
+    @invoice_3 = create(:invoice, customer_id: @customer.id)
+    @invoice_item_6 = create(:invoice_item, invoice_id: @invoice_3.id, item_id: @item_2.id, quantity: 9, unit_price: 9500, status: 2)
+
+    visit merchant_invoice_path(@merchant_1, @invoice_1)
   end
 
   describe "display" do
     it "invoice attributes", :vcr do
-      expect(page).to have_content(@invoices1[0].id)
+      expect(page).to have_content(@invoice_1.id)
       expect(page).to have_content("Status: In Progress")
-      expect(page).to have_content("Created On: #{@invoices1[0].created_at.strftime("%A, %B %d, %Y")}")
-      expect(page).to have_content(@invoices1[0].customer.full_name)
-      expect(page).to_not have_content(@invoices1[1])
-      expect(page).to_not have_content(@invoices2)
+      expect(page).to have_content("Created On: #{@invoice_1.created_at.strftime("%A, %B %d, %Y")}")
+      expect(page).to have_content(@invoice_1.customer.full_name)
+      expect(page).to_not have_content(@invoice_1)
+      expect(page).to_not have_content(@invoice_2)
     end
 
     it "Shows the total revenue for the selected invoice", :vcr do
-      expected = (@invoice_item1.quantity * @invoice_item1.unit_price) + (@invoice_item2.quantity * @invoice_item2.unit_price)
-      expect(page).to have_content(@invoices1[0].total_revenue)
-      expect(@invoices1[0].total_revenue).to eq(expected)
+      expect(@invoice_1.total_revenue).to eq(87600)
+      expect(page).to have_content("Invoice Total Revenue: $876.00")
     end
 
     describe "invoice items" do
       it "lists all invoice item names, quantity, price and status", :vcr do
-        within "#invoice_item-#{@invoice_item2.id}" do
-          expect(page).to have_content(@invoice_item2.item.name)
-          expect(page).to have_content(@invoice_item2.quantity)
-          expect(page).to have_content(@invoice_item2.unit_price)
-          expect(page).to have_content(@invoice_item2.status)
-          expect(page).to_not have_content(@items1[1])
-          expect(page).to_not have_content(@items2)
+        within "#invoice_item-#{@invoice_item_2.id}" do
+          expect(page).to have_content(@invoice_item_2.item.name)
+          expect(page).to have_content(@invoice_item_2.quantity)
+          expect(page).to have_content("$#{@invoice_item_2.unit_price.to_f/(100)}")
+          expect(page).to have_content(@invoice_item_2.status)
+          expect(page).to have_content(@item_1.name)
+          expect(page).to_not have_content(@item_2)
         end
 
-        visit merchant_invoice_path(@merchants[1], @invoices2[0])
-        within "#invoice_item-#{@invoice_item6.id}" do
-          expect(page).to have_content(@invoice_item6.item.name)
-          expect(page).to have_content(@invoice_item6.quantity)
-          expect(page).to have_content(@invoice_item6.unit_price)
-          expect(page).to have_content(@invoice_item6.status)
-          expect(page).to_not have_content(@items2[1])
-          expect(page).to_not have_content(@items1)
+        visit merchant_invoice_path(@merchant_1, @invoice_2)
+        within "#invoice_item-#{@invoice_item_5.id}" do
+          expect(page).to have_content(@invoice_item_5.item.name)
+          expect(page).to have_content(@invoice_item_5.quantity)
+          expect(page).to have_content("$#{@invoice_item_5.unit_price.to_f/(100)}")
+          expect(page).to have_content(@invoice_item_5.status)
+          expect(page).to have_content(@item_3.name)
+          expect(page).to_not have_content(@item_1)
         end
       end
 
       it "select update invoice item status", :vcr do
-        visit merchant_invoice_path(@merchants[0], @invoices1[0])
-        within "#invoice_item-#{@invoice_item2.id}" do
+        visit merchant_invoice_path(@merchant_1, @invoice_1)
+        within "#invoice_item-#{@invoice_item_2.id}" do
           expect(page).to have_content("Pending")
           select "Packaged"
           click_button "Update Invoice Item Status"
 
-          expect(current_path).to eq(merchant_invoice_path(@merchants[0], @invoices1[0]))
-          expect(@invoice_item2.reload.status).to eq("Packaged")
+          expect(current_path).to eq(merchant_invoice_path(@merchant_1, @invoice_1))
+          expect(@invoice_item_2.reload.status).to eq("Packaged")
+        end
+      end
+
+      it 'discount applied' do
+        expect(page).to have_content("Invoice Total Revenue: $876.00")
+        expect(page).to have_content("Invoice Total Revenue After Discount: $774.80")
+
+        within "#invoice_item-#{@invoice_item_1.id}" do
+          expect(page).to have_link("Discounts")
+        end
+      end
+
+      it 'no discount applied' do
+        visit merchant_invoice_path(@merchant_2, @invoice_2)
+
+        expect(page).to have_content("Invoice Total Revenue: $292.00")
+        expect(page).to_not have_content("Invoice Total Revenue After Discount: ")
+
+        within "#invoice_item-#{@invoice_item_5.id}" do
+          expect(page).to_not have_link("Discounts")
         end
       end
     end

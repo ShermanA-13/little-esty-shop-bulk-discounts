@@ -5,6 +5,10 @@
   <p><strong>Status:</strong> <%= @invoice.status.titleize %></p>
   <p><strong>Created On:</strong> <%= @invoice.created_at.strftime("%A, %B %d, %Y") %></p>
   <p><strong>Customer Name:</strong> <%= @invoice.customer.full_name %></p>
+  <p>Invoice Total Revenue: <%= number_to_currency(@invoice.total_revenue.fdiv(100)) %></p>
+  <% if @invoice.discount_amount > 0 %>
+    <p>Invoice Total Revenue After Discount: <%= number_to_currency(@invoice.discount_revenue.fdiv(100)) %></p>
+  <% end %>
 
 <u><h2>Invoice Items:</h2></u>
 
@@ -13,6 +17,12 @@
     <u><h3><%= invoice_item.item.name %></h3></u>
     <p>Quantity: <%= invoice_item.quantity %></p>
     <p>Price: <%= number_to_currency(invoice_item.unit_price.fdiv(100)) %></p>
+    <% if invoice_item.discount? %>
+      <p>Discounts: <%= link_to "Discounts", merchant_bulk_discount_path(@merchant, invoice_item.add_discount) %>
+    <% else %>
+      <p>Discounts: None</p>
+    <% end %>
+
     <p><%= form_with model: [@merchant, invoice_item] do |f| %>
       <p><strong>Invoice Item Status: </strong><%= f.select :status, ['Pending', 'Packaged', 'Shipped'], status: invoice_item.status %>
       <%= f.submit 'Update Invoice Item Status' %>
@@ -20,4 +30,3 @@
   </div>
 <% end %>
 
-<h2>Invoice Total Revenue: <%= number_to_currency(@invoice.total_revenue.fdiv(100)) %></h2>

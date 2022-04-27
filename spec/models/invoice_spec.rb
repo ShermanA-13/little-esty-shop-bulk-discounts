@@ -18,35 +18,62 @@ RSpec.describe Invoice, type: :model do
   end
 
   describe "methods" do
-    it "Shows the total revenue for the selected invoice" do
-      @merchant1 = create(:merchant)
-      @items = create_list(:item, 4, merchant: @merchant1)
-      @customer1 = create(:customer)
-      @customer2 = create(:customer)
-      @invoice1 = create(:invoice, customer: @customer1)
-      @invoice2 = create(:invoice, customer: @customer2)
-      @invoice_item1 = create(:invoice_item, invoice: @invoice1, item: @items.first)
-      @invoice_item2 = create(:invoice_item, invoice: @invoice1, item: @items.second)
-      @invoice_item3 = create(:invoice_item, invoice: @invoice2, item: @items.third)
-      @invoice_item4 = create(:invoice_item, invoice: @invoice2, item: @items.last)
+    before do
+      @merchant_1 = create :merchant
+      @item_1 = create :item, {merchant_id: @merchant_1.id}
+      @item_2 = create :item, {merchant_id: @merchant_1.id}
+      @bulk_1 = @merchant_1.bulk_discounts.create!(percentage: 10, threshold: 10)
+      @bulk_2 = @merchant_1.bulk_discounts.create!(percentage: 25, threshold: 15)
+      @bulk_3 = @merchant_1.bulk_discounts.create!(percentage: 15, threshold: 20)
 
-      expected = (@invoice_item1.quantity * @invoice_item1.unit_price) + (@invoice_item2.quantity * @invoice_item2.unit_price)
+      @merchant_2 = create :merchant
+      @item_3 = create :item, {merchant_id: @merchant_2.id}
+      @item_4 = create :item, {merchant_id: @merchant_1.id}
+      @bulk_4 = @merchant_2.bulk_discounts.create!(percentage: 10, threshold: 6)
 
-      expect(@invoice1.total_revenue).to eq(expected)
+      @customer = create(:customer)
+
+      @invoice_1 = create(:invoice, customer_id: @customer.id)
+      @invoice_item_1 = create(:invoice_item, invoice_id: @invoice_1.id, item_id: @item_4.id, quantity: 16, unit_price: 2200)
+      @invoice_item_2 = create(:invoice_item, invoice_id: @invoice_1.id, item_id: @item_1.id, quantity: 6, unit_price: 4200)
+      @invoice_item_3 = create(:invoice_item, invoice_id: @invoice_1.id, item_id: @item_3.id, quantity: 4, unit_price: 3500)
+      @invoice_item_4 = create(:invoice_item, invoice_id: @invoice_1.id, item_id: @item_2.id, quantity: 11, unit_price: 1200)
+
+      @invoice_2 = create(:invoice, customer_id: @customer.id)
+      @invoice_item_5 = create(:invoice_item, invoice_id: @invoice_2.id, item_id: @item_3.id, quantity: 9, unit_price: 7300 )
+
+      @invoice_3 = create(:invoice, customer_id: @customer.id)
+      @invoice_item_6 = create(:invoice_item, invoice_id: @invoice_3.id, item_id: @item_2.id, quantity: 9, unit_price: 9500, status: 2)
     end
-  end
 
-  it "displays incomplete invoices with date it was created and link to their show page" do
-    merch = create(:merchant)
-    item = create(:item, merchant: merch)
-    customer = create(:customer)
-    invoice1 = create(:invoice, customer: customer)
-    invoice2 = create(:invoice, customer: customer)
-    invoice_item1 = create(:invoice_item, invoice: invoice1, item: item, status: 1)
-    invoice_item2 = create(:invoice_item, invoice: invoice1, item: item, status: 2)
-    invoice_all = Invoice.all
-    expect(invoice_all.incomplete_invoices[0]).to eq(invoice1)
-    expect(invoice_all.incomplete_invoices[0].created_at.strftime("%A, %B %e, %Y")).to eq(invoice1.created_at.strftime("%A, %B %e, %Y"))
-    expect(invoice_all.incomplete_invoices.length).to eq(1)
+    it "Shows the total revenue for the selected invoice" do
+      expect(@invoice_1.total_revenue).to eq(87600)
+      expect(@invoice_1.total_revenue).to_not eq("yes")
+    end
+
+
+    it "displays incomplete invoices with date it was created and link to their show page" do
+      invoices = Invoice.all
+
+      expect(invoices.incomplete_invoices).to eq([@invoice_1, @invoice_2])
+      expect(invoices.incomplete_invoices).to_not eq([@invoice_3])
+      expect(invoices.incomplete_invoices[0].created_at.strftime("%A, %B %e, %Y")).to eq(@invoice_1.created_at.strftime("%A, %B %e, %Y"))
+      expect(invoices.incomplete_invoices.length).to eq(2)
+      expect(invoices.incomplete_invoices.length).to_not eq(6)
+    end
+
+    it '.discount_amount' do
+      expect(@invoice_1.discount_amount).to eq(10120)
+      expect(@invoice_2.discount_amount).to eq(6570)
+      expect(@invoice_3.discount_amount).to eq(0)
+      expect(@invoice_1.discount_amount).to_not eq(0)
+    end
+
+    it '.discount_revenue' do
+      expect(@invoice_1.discount_revenue).to eq(77480)
+      expect(@invoice_2.discount_revenue).to eq(59130)
+      expect(@invoice_3.discount_revenue).to eq(85500)
+      expect(@invoice_1.discount_revenue).to_not eq(0)
+    end
   end
 end
