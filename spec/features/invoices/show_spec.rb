@@ -4,6 +4,7 @@ RSpec.describe "Merchant Invoices Show" do
   before :each do
     @merchant_1 = create :merchant
     @item_1 = create :item, {merchant_id: @merchant_1.id}
+    @item_4 = create :item, {merchant_id: @merchant_1.id}
     @item_2 = create :item, {merchant_id: @merchant_1.id}
     @bulk_1 = @merchant_1.bulk_discounts.create!(percentage: 10, threshold: 10)
     @bulk_2 = @merchant_1.bulk_discounts.create!(percentage: 25, threshold: 15)
@@ -11,7 +12,6 @@ RSpec.describe "Merchant Invoices Show" do
 
     @merchant_2 = create :merchant
     @item_3 = create :item, {merchant_id: @merchant_2.id}
-    @item_4 = create :item, {merchant_id: @merchant_1.id}
     @bulk_4 = @merchant_2.bulk_discounts.create!(percentage: 10, threshold: 6)
 
     @customer = create(:customer)
@@ -83,6 +83,10 @@ RSpec.describe "Merchant Invoices Show" do
       it 'discount applied' do
         expect(page).to have_content("Invoice Total Revenue: $876.00")
         expect(page).to have_content("Invoice Total Revenue After Discount: $774.80")
+
+        within "#invoice_item-#{@invoice_item_1.id}" do
+          expect(page).to have_link("Discounts")
+        end
       end
 
       it 'no discount applied' do
@@ -90,6 +94,10 @@ RSpec.describe "Merchant Invoices Show" do
 
         expect(page).to have_content("Invoice Total Revenue: $292.00")
         expect(page).to_not have_content("Invoice Total Revenue After Discount: ")
+
+        within "#invoice_item-#{@invoice_item_5.id}" do
+          expect(page).to_not have_link("Discounts")
+        end
       end
     end
   end
