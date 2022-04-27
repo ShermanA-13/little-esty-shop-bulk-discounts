@@ -8,4 +8,15 @@ class InvoiceItem < ApplicationRecord
   validates :unit_price, presence: true, numericality: true
 
   enum status: {"Pending" => 0, "Packaged" => 1, "Shipped" => 2}
+
+
+  def discount?
+    !add_discount.nil?
+  end
+
+  def add_discount
+    bulk_discounts.where("threshold <= ?", quantity)
+                  .order(percentage: :desc)
+                  .first
+  end
 end
