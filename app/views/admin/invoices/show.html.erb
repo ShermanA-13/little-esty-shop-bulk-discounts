@@ -4,6 +4,10 @@
   <p><strong>Invoice ID: <%= @invoice.id %></strong></p>
   <p><strong>Created At: <%= @invoice.created_at.strftime("%A, %B %e, %Y") %></strong></p>
   <p><strong>Customer: <%= "#{@invoice.customer.first_name} #{@invoice.customer.last_name}" %></strong></p>
+  <h2>Invoice Total Revenue: <%= number_to_currency(@invoice.total_revenue.fdiv(100)) %></h2>
+  <% if @invoice.discount_amount > 0 %>
+    <p>Invoice Total Revenue After Discount: <%= number_to_currency(@invoice.discount_revenue.fdiv(100)) %></p>
+  <% end %>
   <%= form_with model: [:admin, @invoice] do |f| %>
     <p><strong>Invoice Status: </strong><%= f.select :status, ['Cancelled', 'In Progress', 'Completed'], status: @invoice.status %>
     <%= f.submit "Update Invoice Status" %>
@@ -21,4 +25,3 @@
   </div>
 <% end %>
 
-<h2>Invoice Total Revenue: <%= number_to_currency(@invoice.total_revenue.fdiv(100)) %></h2>
