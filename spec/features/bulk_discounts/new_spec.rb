@@ -87,4 +87,14 @@ describe 'merchant bulk discount index page' do
     expect(current_path).to eq(merchant_bulk_discounts_path(@merchant_1))
     expect(page).to have_content("35% off of 30 or more items")
   end
+
+  it 'shows flash message if not all areas are filled' do
+    fill_in("Percentage", with: 35)
+    fill_in("Threshold", with: "")
+
+    click_button("Submit")
+    expect(current_path).to eq(new_merchant_bulk_discount_path(@merchant_1))
+    expect(page).to have_content("Error: all requested areas must be filled!")
+    expect(page).to_not have_content("35% off of 30 or more items")
+  end
 end
