@@ -76,18 +76,21 @@ describe 'merchant bulk discount index page' do
     @bulk_3 = @merchant_1.bulk_discounts.create!(percentage: 15, threshold: 20)
     @bulk_4 = @merchant_1.bulk_discounts.create!(percentage: 20, threshold: 25)
 
-    visit merchant_bulk_discount_path(@merchant_1, @bulk_1)
+    visit edit_merchant_bulk_discount_path(@merchant_1, @bulk_1)
   end
 
-  it 'has discount and threshold' do
-    expect(page).to have_content("Percentage: #{@bulk_1.percentage}")
-    expect(page).to have_content("Threshold: #{@bulk_1.threshold}")
-  end
+  it 'shows current attributes are prepopulated, once select fields are updated it redirects to show page, attributes are updated' do
+    expect(page).to have_field(:percentage, with: @bulk_1.percentage)
+    expect(page).to have_field(:threshold, with: @bulk_1.threshold)
 
-  it 'has link to edit discount that redirects to edit page' do
-    expect(page).to have_link("Edit")
-    click_link("Edit")
+    fill_in("Percentage", with: 10)
+    fill_in("Threshold", with: 10)
+    click_button("Submit")
 
-    expect(current_path).to eq(edit_merchant_bulk_discount_path(@merchant_1, @bulk_1))
+    expect(current_path).to eq(merchant_bulk_discount_path(@merchant_1, @bulk_1))
+    expect(page).to have_content("Discount has been updated.")
+    expect(page).to have_content("Percentage: 10")
+    expect(page).to have_content("Threshold: 10")
+    expect(page).to_not have_content("Percentage: 5")
   end
 end
