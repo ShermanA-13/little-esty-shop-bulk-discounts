@@ -1,7 +1,13 @@
 <%= form_with url: merchant_bulk_discount_path(@merchant, @discount), method: :patch do |f| %>
-  <%= f.label :percentage %>
-  <%= f.text_field :percentage, value: @discount.percentage %>
-  <%= f.label :threshold %>
-  <%= f.text_field :threshold, value: @discount.threshold %>
+  <p>
+    <%= f.label :percentage %>
+    <%= f.number_field :percentage, in: 1..99, step: 1, value: @discount.percentage %>
+  </p>
+
+  <p>
+    <%= f.label :threshold %>
+    <%= f.number_field :threshold, in: 1..2000, step: 1, value: @discount.threshold %>
+  </p>
+
   <%= f.submit "Submit" %>
 <% end %>
