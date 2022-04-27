@@ -160,7 +160,7 @@ RSpec.describe "Merchant Dashboard", type: :feature do
     it 'has a link to my bulk discounts' do
       expect(page).to have_link("Bulk Discounts")
       click_link("Bulk Discounts")
-      expect(current_path).to eq("/merchant/#{@merchant1.id}/bulk_discounts")
+      expect(current_path).to eq(merchant_bulk_discounts_path(@merchant))
     end
   end
 end
