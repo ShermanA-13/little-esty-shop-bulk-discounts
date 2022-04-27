@@ -83,4 +83,11 @@ describe 'merchant bulk discount index page' do
     expect(page).to have_content("Percentage: #{@bulk_1.percentage}")
     expect(page).to have_content("Threshold: #{@bulk_1.threshold}")
   end
+
+  it 'has link to edit discount that redirects to edit page' do
+    expect(page).to have_link("Edit")
+    click_link("Edit")
+
+    expect(current_path).to eq(edit_merchant_bulk_discount_path(@merchant_1, @bulk_1))
+  end
 end
