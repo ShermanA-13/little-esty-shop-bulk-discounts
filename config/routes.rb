@@ -4,17 +4,18 @@ Rails.application.routes.draw do
   get "/", to: "application#welcome"
 
   resources :merchants, only: [:show] do
-    resources :items, only: [:index, :show, :edit, :update, :new, :create]
+    resources :dashboard, only: [:index]
+    resources :bulk_discounts, only: [:index]
+    resources :items, except: [:destroy]
     resources :invoices, only: [:index, :show]
     resources :invoice_items, only: [:update]
-    resources :dashboard, only: [:index]
   end
 
   resources :admin, only: [:index]
 
   namespace :admin do
     patch "/merchants/:id", to: "merchants#switch"
-    resources :merchants, only: [:index, :show, :new, :create, :update, :edit]
+    resources :merchants, except: [:destroy]
     resources :invoices, only: [:index, :show, :update]
   end
 end
