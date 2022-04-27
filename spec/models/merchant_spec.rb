@@ -72,6 +72,7 @@ RSpec.describe Merchant, type: :model do
   end
 
   describe "methods" do
+    #Refactor issue -combine describe 'sorting'
     it "Finds all enabled or disabled merchants" do
       merchant_1 = create(:merchant)
       merchant_2 = Merchant.create!(name: "Doesn't matter", enabled: false)
