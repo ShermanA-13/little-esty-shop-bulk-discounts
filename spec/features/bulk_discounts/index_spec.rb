@@ -83,14 +83,27 @@ describe 'merchant bulk discount index page' do
     within "#discount-#{@bulk_1.id}" do
       expect(page).to have_content("#{@bulk_1.percentage} off of #{@bulk_1.threshold} or more items")
     end
+
     within "#discount-#{@bulk_2.id}" do
       expect(page).to have_content("#{@bulk_2.percentage} off of #{@bulk_2.threshold} or more items")
     end
+
     within "#discount-#{@bulk_3.id}" do
       expect(page).to have_content("#{@bulk_3.percentage} off of #{@bulk_3.threshold} or more items")
     end
+
     within "#discount-#{@bulk_4.id}" do
       expect(page).to have_content("#{@bulk_4.percentage} off of #{@bulk_4.threshold} or more items")
+    end
+  end
+
+  it 'each discount is a link to its show page' do
+    link = "#{@bulk_1.percentage} off of #{@bulk_1.threshold} or more items!"
+
+    within "#discount-#{@bulk_1.id}" do
+      expect(page).to have_link(link)
+      click_link(link)
+      expect(current_path).to eq(merchant_bulk_discounts_path(@merchant_1, @bulk_1))
     end
   end
 end
