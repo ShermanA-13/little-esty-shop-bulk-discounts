@@ -71,5 +71,12 @@ RSpec.describe Invoice, type: :model do
       expect(@invoice_3.discount_amount).to eq(0)
       expect(@invoice_1.discount_amount).to_not eq(0)
     end
+
+    it '.discount_revenue' do
+      expect(@invoice_1.discount_revenue).to eq(77480)
+      expect(@invoice_2.discount_revenue).to eq(59130)
+      expect(@invoice_3.discount_revenue).to eq(85500)
+      expect(@invoice_1.discount_revenue).to_not eq(0)
+    end
   end
 end
