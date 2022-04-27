@@ -1,9 +1,10 @@
 <h1>All Discounts</h1>
+<%= button_to "New Discount", new_merchant_bulk_discount_path(@merchant), method: :get, params: {merchant_id: @merchant.id} %>
 
-  <% @merchant.bulk_discounts.each do |discount| %>
-    <div id='discount-<%= discount.id %>'>
-      <li>
-        <%= link_to "#{discount.percentage} off of #{discount.threshold} or more items!", merchant_bulk_discounts_path(@merchant, discount.id) %>
-      </li>
-    </div>
-  <% end %>
+<% @merchant.bulk_discounts.each do |discount| %>
+  <div id='discount-<%= discount.id %>'>
+    <li>
+      <%= link_to "#{discount.percentage}% off of #{discount.threshold} or more items!", merchant_bulk_discounts_path(@merchant, discount.id) %>
+    </li>
+  </div>
+<% end %>
